@@ -2,6 +2,8 @@
 
 #Import libraries and packages
 import keras
+import os
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Convolution2D
 from keras.layers import MaxPooling2D
@@ -11,6 +13,8 @@ from keras.preprocessing.image import ImageDataGenerator
 from IPython.display import display
 from PIL import Image
 
+checkpoint_path = "training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
 
 model = keras.Sequential([
     keras.layers.Conv2D(32, (3, 3), input_shape = (64, 64, 3), activation = "relu"),
@@ -18,6 +22,11 @@ model = keras.Sequential([
     keras.layers.Dense(units = 128, activation = 'relu'),
     keras.layers.Dense(units = 1, activation = 'sigmoid')
 ])
+
+model.load_weights(checkpoint_path)
+
+# Create checkpoint callback
+cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1)
 
 #Compiler
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
@@ -33,13 +42,13 @@ trainDatagen = ImageDataGenerator(
 testDatagen = ImageDataGenerator(rescale = 1./255)
 
 trainingSet = trainDatagen.flow_from_directory(
-    'GTSRB_Final_Training_Images/GTSRB/Final_Training/Images',
+    'datasets/trafficSigns/GTSRB_Final_Training_Images/GTSRB/Final_Training/Images',
     target_size = (64, 64),
     class_mode = 'binary'
 )
 
 testSet = testDatagen.flow_from_directory(
-    'GTSRB_Final_Test_Images/GTSRB/Final_Test/Images',
+    'datasets/trafficSigns/GTSRB_Final_Test_Images/GTSRB/Final_Test/Images',
     target_size = (64, 64),
     class_mode = 'binary'
 )
@@ -47,7 +56,8 @@ testSet = testDatagen.flow_from_directory(
 model.fit_generator(
     trainingSet,
     steps_per_epoch = 10,
-    epochs = 1,
+    epochs = 20,
     validation_data = testSet,
-    validation_steps = 80
+    validation_steps = 80,
+    callbacks = [cp_callback]
 )
