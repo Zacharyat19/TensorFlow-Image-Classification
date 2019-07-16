@@ -13,10 +13,10 @@ from PIL import Image
 
 
 model = keras.Sequential([
-    keras.layers.Convolution2D(32, 3, 3, input_shape = (64, 64, 3), activation = 'relu'),
+    keras.layers.Conv2D(32, (3, 3), input_shape = (64, 64, 3), activation = "relu"),
     keras.layers.Flatten(),
-    keras.layers.Dense(output_dim = 128, activation = 'relu'),
-    keras.layers.Dense(output_dim = 1, activation = 'sigmoid')
+    keras.layers.Dense(units = 128, activation = 'relu'),
+    keras.layers.Dense(units = 1, activation = 'sigmoid')
 ])
 
 #Compiler
@@ -25,31 +25,29 @@ model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accu
 #Fitting images
 trainDatagen = ImageDataGenerator(
     rescale = 1./255,
-    shearRange = 0.2,
-    zoomRange = 0.2,
-    horizontalFlip = True
+    shear_range = 0.2,
+    zoom_range = 0.2,
+    horizontal_flip = True
 )
 
 testDatagen = ImageDataGenerator(rescale = 1./255)
 
 trainingSet = trainDatagen.flow_from_directory(
     'GTSRB_Final_Training_Images/GTSRB/Final_Training/Images',
-    targetSize = (64, 64),
-    batchSize = 32,
-    classMode = 'binary'
+    target_size = (64, 64),
+    class_mode = 'binary'
 )
 
 testSet = testDatagen.flow_from_directory(
     'GTSRB_Final_Test_Images/GTSRB/Final_Test/Images',
-    targetSize(64, 64),
-    batchSize = 32,
-    classMode = 'binary'
+    target_size = (64, 64),
+    class_mode = 'binary'
 )
 
-classifier.fit_generator(
+model.fit_generator(
     trainingSet,
-    steps_per_epoch = 8000,
+    steps_per_epoch = 10,
     epochs = 1,
     validation_data = testSet,
-    validation_steps = 800
+    validation_steps = 80
 )
