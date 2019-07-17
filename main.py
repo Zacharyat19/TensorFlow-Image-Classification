@@ -1,4 +1,4 @@
-#Conventional Neural network layering
+#Using keras to create a conventional neural network through layering
 
 #Import libraries and packages
 import keras
@@ -10,12 +10,14 @@ from keras.layers import Flatten, Dense, Activation, Dropout
 from keras.preprocessing.image import ImageDataGenerator
 from PIL import Image
 
+
 checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1)
 
 #Fitting images
+#Resizing images to 64 x 64
 trainDatagen = ImageDataGenerator(
     rescale = 1./255,
     shear_range = 0.2,
@@ -25,6 +27,7 @@ trainDatagen = ImageDataGenerator(
 
 testDatagen = ImageDataGenerator(rescale = 1./255)
 
+#link data directory
 trainingSet = trainDatagen.flow_from_directory(
     'datasets/dogs-vs-cats/train',
     target_size = (64, 64),
@@ -37,7 +40,10 @@ testSet = testDatagen.flow_from_directory(
     class_mode = 'binary'
 )
 
+#Initialize Sequential model
 model = Sequential()
+#Start layering with Conv2D, starting at 32 layers
+#and inceasing by a factor of two
 model.add(Conv2D(64, (3,3), input_shape = (64, 64, 3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
@@ -46,7 +52,7 @@ model.add(Conv2D(64, (3,3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 
-model.add(Conv2D(64, (3,3)))
+model.add(Conv2D(128, (3,3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 
