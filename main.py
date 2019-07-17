@@ -56,8 +56,12 @@ model.add(Conv2D(128, (3,3)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 
+model.add(Conv2D(256, (3,3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size = (2, 2)))
+
 model.add(Flatten())
-model.add(Dense(64))
+model.add(Dense(64, kernel_regularizer=keras.regularizers.l2(0.001)))
 model.add(Activation('relu'))
 model.add(Dropout(0.5))
 model.add(Dense(1))
@@ -65,7 +69,7 @@ model.add(Activation('sigmoid'))
 
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-model.load_weights(checkpoint_path)
+# model.load_weights(checkpoint_path)
 
 model.fit_generator(
     trainingSet,
