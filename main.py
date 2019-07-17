@@ -65,6 +65,8 @@ model.add(Activation('sigmoid'))
 
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 
+model.load_weights(checkpoint_path)
+
 model.fit_generator(
     trainingSet,
     steps_per_epoch = 781,
