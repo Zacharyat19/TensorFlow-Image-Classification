@@ -67,8 +67,8 @@ model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accu
 
 model.fit_generator(
     trainingSet,
-    steps_per_epoch = 25,
-    epochs = 50,
+    steps_per_epoch = 781,
+    epochs = 20,
     validation_data = testSet,
     validation_steps = 10,
     callbacks = [cp_callback]
