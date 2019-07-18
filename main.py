@@ -12,8 +12,8 @@ from keras import optimizers
 from PIL import Image
 
 
-#checkpoint_path = "training_1/cp.ckpt"
-#checkpoint_dir = os.path.dirname(checkpoint_path)
+checkpoint_path = "training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
 
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
 
@@ -25,19 +25,11 @@ trainDatagen = ImageDataGenerator(
     height_shift_range = 0.2,
     rescale=1./255,
     shear_range = 0.2,
-    zoom_range = 0.2,
-    rotation_range = 15
+    zoom_range = 0.2
 )
 
 testDatagen = ImageDataGenerator(
-    rotation_range = 40,
-    width_shift_range = 0.2,
-    height_shift_range = 0.2,
-    rescale=1./255,
-    shear_range = 0.2,
-    zoom_range = 0.2,
-    horizontal_flip = True,
-    fill_mode = 'nearest'
+    rescale=1./255
 )
 
 #link data directory
@@ -79,7 +71,7 @@ model.add(Activation('sigmoid'))
 sgd = optimizers.SGD(lr = 0.0001, decay = 0, momentum = 0.9, nesterov = True)
 model.compile(optimizer = sgd, loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-# model.load_weights(checkpoint_path)
+model.load_weights(checkpoint_path)
 
 model.fit_generator(
     trainingSet,
