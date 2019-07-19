@@ -18,13 +18,14 @@ RESNET50_POOLING_AVERAGE = 'avg'
 DENSE_LAYER_ACTIVATION = 'softmax'
 OBJECTIVE_FUNCTION = 'categorical_crossentropy'
 LOSS_METRICS = ['accuracy']
-NUM_EPOCHS = 10
+NUM_EPOCHS = 1
 EARLY_STOP_PATIENCE = 3
 STEPS_PER_EPOCH_TRAINING = 10
 STEPS_PER_EPOCH_VALIDATION = 10
 BATCH_SIZE_TRAINING = 100
 BATCH_SIZE_VALIDATION = 100
 BATCH_SIZE_TESTING = 1
+VAL_SPLIT = 0.3
 
 model = Sequential()
 model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
@@ -39,38 +40,38 @@ model.compile(optimizer = sgd, loss = OBJECTIVE_FUNCTION, metrics = LOSS_METRICS
 image_size = IMAGE_RESIZE
 
 data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
-train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = val_split)
+train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = VAL_SPLIT)
 
 train_generator = train_image_gen.flow_from_directory(
     'datasets/dogs-vs-cats/train',
-    target_size=(Image_width,Image_height),
-    batch_size=batch_size,
+    target_size = (224, 224),
+    batch_size = BATCH_SIZE_TRAINING,
     seed=42,
-    subset='training',
-    shuffle=True
+    subset ='training',
+    shuffle = True
 )
 
-val_generator = train_image_gen.flow_from_directory(
+val_generator = data_generator.flow_from_directory(
     'datasets/dogs-vs-cats/test',
-    target_size=(Image_width,Image_height),
-    batch_size=batch_size,
+    target_size = (224, 224),
+    batch_size = BATCH_SIZE_TESTING,
     seed=42,
-    subset='validation',
-    shuffle=True
+    subset ='validation',
+    shuffle = True
 )
 
-(BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(validation_generator))
+(BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(val_generator))
 
 cb_early_stopper = EarlyStopping(monitor = 'val_loss', patience = EARLY_STOP_PATIENCE)
 cb_checkpointer = ModelCheckpoint(filepath = '../working/best.hdf5', monitor = 'val_loss', save_best_only = True, mode = 'auto')
 
 fit_history = model.fit_generator(
         train_generator,
-        steps_per_epoch=STEPS_PER_EPOCH_TRAINING,
+        steps_per_epoch = STEPS_PER_EPOCH_TRAINING,
         epochs = NUM_EPOCHS,
-        validation_data=validation_generator,
-        validation_steps=STEPS_PER_EPOCH_VALIDATION,
-        callbacks=[cb_checkpointer, cb_early_stopper]
+        validation_data = val_generator,
+        validation_steps = STEPS_PER_EPOCH_VALIDATION,
+        callbacks = [cb_checkpointer, cb_early_stopper]
 )
 model.load_weights("../working/best.hdf5")
 
