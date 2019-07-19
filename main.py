@@ -68,11 +68,11 @@ model.load_weights(checkpoint_path)
 
 model.fit_generator(
     trainingSet,
-    steps_per_epoch = 781,
     epochs = 20,
     validation_data = testSet,
-    validation_steps = 10,
+    validation_steps = 1,
     callbacks = [cp_callback],
     max_queue_size = 25,
+    workers = 8,
     shuffle = True
 )
