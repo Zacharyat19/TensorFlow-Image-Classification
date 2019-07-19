@@ -9,6 +9,12 @@ from keras import optimizers
 from PIL import Image
 import matplotlib.pyplot as plt
 
+checkpoint_path = "training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+# Create checkpoint callback
+cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
+
 trainDatagen = ImageDataGenerator(
     rotation_range = 40,
     width_shift_range = 0.2,
@@ -36,34 +42,38 @@ testSet = testDatagen.flow_from_directory(
 )
 
 model = Sequential()
-model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(64, 64, 3)))
+model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(64, 64, 3)))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 model.add(Dropout(0.1))
 
-model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 model.add(Dropout(0.1))
 
-model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 model.add(Dropout(0.1))
 
 model.add(Flatten())
-model.add(Dense(64))
+model.add(Dense(128, kernel_regularizer=keras.regularizers.l2(0.001)))
 model.add(Activation('relu'))
-model.add(Dropout(0.6))
+model.add(Dropout(0.1))
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
-model.compile(optimizer = 'sgd', loss = 'binary_crossentropy', metrics = ['accuracy'])
+sgd = optimizers.SGD(lr = 0.0001, decay = 0, momentum = 0.9, nesterov = True)
+model.compile(optimizer = sgd, loss = 'binary_crossentropy', metrics = ['accuracy'])
 
 history = model.fit_generator(
     trainingSet,
     epochs = 20,
+    steps_per_epoch = 781,
     validation_data = testSet,
+    validation_steps = 10,
     max_queue_size = 25,
     workers = 8,
-    shuffle = True
+    shuffle = True,
+    callbacks = [cp_callback]
 )
 
 print(history.history.keys())
