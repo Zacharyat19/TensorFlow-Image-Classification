@@ -8,6 +8,12 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers
 from PIL import Image
 import matplotlib.pyplot as plt
+from tkinter.filedialog import askopenfilename
+from tkinter import Tk
+
+#opens interface to pick a file
+Tk().withdraw()
+filename = askopenfilename()
 
 checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
