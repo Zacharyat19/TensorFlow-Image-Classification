@@ -27,7 +27,8 @@ BATCH_SIZE_VALIDATION = 100
 BATCH_SIZE_TESTING = 1
 
 model = Sequential()
-model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE, weights = 'imagenet'))
+model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
+weights = 'imagenet'))
 model.add(Dense(NUM_CLASSES, activation = DENSE_LAYER_ACTIVATION))
 model.layers[0].trainable = False
 model.summary()
@@ -41,7 +42,7 @@ data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
 train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = val_split)
 
 train_generator = train_image_gen.flow_from_directory(
-    train_dir,
+    'datasets/dogs-vs-cats/train',
     target_size=(Image_width,Image_height),
     batch_size=batch_size,
     seed=42,
@@ -50,7 +51,7 @@ train_generator = train_image_gen.flow_from_directory(
 )
 
 val_generator = train_image_gen.flow_from_directory(
-    train_dir,
+    'datasets/dogs-vs-cats/test',
     target_size=(Image_width,Image_height),
     batch_size=batch_size,
     seed=42,
