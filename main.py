@@ -1,93 +1,91 @@
-import keras
+import cv2
 import os
-import tensorflow as tf
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Flatten, Dense, Activation, Dropout
-from keras.preprocessing.image import ImageDataGenerator
-from keras import optimizers
-from PIL import Image
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from tkinter.filedialog import askopenfilename
-from tkinter import Tk
+from keras.applications import ResNet50
+from keras.models import Sequential
+from keras.layers import Dense
+from keras import optimizers
+from keras.applications.resnet50 import preprocess_input
+from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
-#opens interface to pick a file
-Tk().withdraw()
-filename = askopenfilename()
-
-checkpoint_path = "training_1/cp.ckpt"
-checkpoint_dir = os.path.dirname(checkpoint_path)
-
-# Create checkpoint callback
-cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
-
-trainDatagen = ImageDataGenerator(
-    rotation_range = 90,
-    width_shift_range = 0.1,
-    height_shift_range = 0.1,
-    rescale=1./255,
-    shear_range = 0.2,
-    zoom_range = 0.2,
-    horizontal_flip = True
-)
-
-testDatagen = ImageDataGenerator(
-    rescale=1./255
-)
-
-trainingSet = trainDatagen.flow_from_directory(
-    'datasets/dogs-vs-cats/train',
-    target_size = (64, 64),
-    class_mode = 'binary'
-)
-
-testSet = testDatagen.flow_from_directory(
-    'datasets/dogs-vs-cats/test',
-    target_size = (64, 64),
-    class_mode = 'binary'
-)
+NUM_CLASSES = 2
+CHANNELS = 3
+IMAGE_RESIZE = 224
+RESNET50_POOLING_AVERAGE = 'avg'
+DENSE_LAYER_ACTIVATION = 'softmax'
+OBJECTIVE_FUNCTION = 'categorical_crossentropy'
+LOSS_METRICS = ['accuracy']
+NUM_EPOCHS = 10
+EARLY_STOP_PATIENCE = 3
+STEPS_PER_EPOCH_TRAINING = 10
+STEPS_PER_EPOCH_VALIDATION = 10
+BATCH_SIZE_TRAINING = 100
+BATCH_SIZE_VALIDATION = 100
+BATCH_SIZE_TESTING = 1
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(64, 64, 3)))
-model.add(MaxPooling2D(pool_size = (2, 2)))
-model.add(Dropout(0.1))
+model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE, weights = 'imagenet'))
+model.add(Dense(NUM_CLASSES, activation = DENSE_LAYER_ACTIVATION))
+model.layers[0].trainable = False
+model.summary()
 
-model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-model.add(MaxPooling2D(pool_size = (2, 2)))
-model.add(Dropout(0.1))
+sgd = optimizers.SGD(lr = 0.01, decay = 1e-6, momentum = 0.9, nesterov = True)
+model.compile(optimizer = sgd, loss = OBJECTIVE_FUNCTION, metrics = LOSS_METRICS)
 
-model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-model.add(MaxPooling2D(pool_size = (2, 2)))
-model.add(Dropout(0.1))
+image_size = IMAGE_RESIZE
 
-model.add(Flatten())
-model.add(Dense(128, kernel_regularizer=keras.regularizers.l2(0.001)))
-model.add(Activation('relu'))
-model.add(Dropout(0.1))
-model.add(Dense(1))
-model.add(Activation('sigmoid'))
+data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
 
-sgd = optimizers.SGD(lr = 0.0001, decay = 0, momentum = 0.9, nesterov = True)
-model.compile(optimizer = sgd, loss = 'binary_crossentropy', metrics = ['accuracy'])
-
-history = model.fit_generator(
-    trainingSet,
-    epochs = 20,
-    steps_per_epoch = 781,
-    validation_data = testSet,
-    validation_steps = 10,
-    max_queue_size = 25,
-    workers = 8,
-    shuffle = True,
-    callbacks = [cp_callback]
+train_generator = data_generator.flow_from_directory(
+        'datasets/dogs-vs-cats/train',
+        target_size=(image_size, image_size),
+        batch_size=BATCH_SIZE_TRAINING,
+        class_mode='categorical'
 )
 
-print(history.history.keys())
+validation_generator = data_generator.flow_from_directory(
+        'datasets/dogs-vs-cats/test',
+        target_size=(image_size, image_size),
+        batch_size=BATCH_SIZE_VALIDATION,
+        class_mode='categorical'
+)
 
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
+(BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(validation_generator))
+
+cb_early_stopper = EarlyStopping(monitor = 'val_loss', patience = EARLY_STOP_PATIENCE)
+cb_checkpointer = ModelCheckpoint(filepath = '../working/best.hdf5', monitor = 'val_loss', save_best_only = True, mode = 'auto')
+
+fit_history = model.fit_generator(
+        train_generator,
+        steps_per_epoch=STEPS_PER_EPOCH_TRAINING,
+        epochs = NUM_EPOCHS,
+        validation_data=validation_generator,
+        validation_steps=STEPS_PER_EPOCH_VALIDATION,
+        callbacks=[cb_checkpointer, cb_early_stopper]
+)
+model.load_weights("../working/best.hdf5")
+
+print(fit_history.history.keys())
+
+plt.figure(1, figsize = (15,8))
+
+plt.subplot(221)
+plt.plot(fit_history.history['acc'])
+plt.plot(fit_history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.legend(['train', 'valid'])
+
+plt.subplot(222)
+plt.plot(fit_history.history['loss'])
+plt.plot(fit_history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'valid'])
+
 plt.show()
