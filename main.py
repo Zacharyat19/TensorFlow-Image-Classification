@@ -73,7 +73,7 @@ fit_history = model.fit_generator(
         validation_steps = STEPS_PER_EPOCH_VALIDATION,
         callbacks = [cb_checkpointer, cb_early_stopper]
 )
-model.load_weights("../working/best.hdf5")
+#model.load_weights("../working/best.hdf5")
 
 print(fit_history.history.keys())
 
