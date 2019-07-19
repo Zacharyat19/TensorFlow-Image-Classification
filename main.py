@@ -1,6 +1,3 @@
-#Conventional Neural network layering
-
-#Import libraries and packages
 import keras
 import os
 import tensorflow as tf
@@ -12,16 +9,26 @@ from keras import optimizers
 from PIL import Image
 import matplotlib.pyplot as plt
 
-
-#Fitting images
 trainDatagen = ImageDataGenerator(
-    rescale = 1./255,
-    rotation_range = 15,
+    rotation_range = 40,
+    width_shift_range = 0.2,
+    height_shift_range = 0.2,
+    rescale=1./255,
+    shear_range = 0.2,
     zoom_range = 0.2,
-    shear_range = 0.2
+    horizontal_flip = True
 )
 
-testDatagen = ImageDataGenerator(rescale = 1./255)
+testDatagen = ImageDataGenerator(
+    rotation_range = 40,
+    width_shift_range = 0.2,
+    height_shift_range = 0.2,
+    rescale=1./255,
+    shear_range = 0.2,
+    zoom_range = 0.2,
+    horizontal_flip = True,
+    fill_mode = 'nearest'
+)
 
 trainingSet = trainDatagen.flow_from_directory(
     'datasets/dogs-vs-cats/train',
@@ -51,14 +58,13 @@ model.add(Dropout(0.1))
 model.add(Flatten())
 model.add(Dense(64))
 model.add(Activation('relu'))
-model.add(Dropout(0.1))
+model.add(Dropout(0.6))
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
 model.compile(optimizer = 'sgd', loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-
-model.fit_generator(
+history = model.fit_generator(
     trainingSet,
     epochs = 20,
     validation_data = testSet,
