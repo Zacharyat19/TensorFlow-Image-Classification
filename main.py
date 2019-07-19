@@ -38,19 +38,24 @@ model.compile(optimizer = sgd, loss = OBJECTIVE_FUNCTION, metrics = LOSS_METRICS
 image_size = IMAGE_RESIZE
 
 data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
+train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = val_split)
 
-train_generator = data_generator.flow_from_directory(
-        'datasets/dogs-vs-cats/train',
-        target_size=(image_size, image_size),
-        batch_size=BATCH_SIZE_TRAINING,
-        class_mode='categorical'
+train_generator = train_image_gen.flow_from_directory(
+    train_dir,
+    target_size=(Image_width,Image_height),
+    batch_size=batch_size,
+    seed=42,
+    subset='training',
+    shuffle=True
 )
 
-validation_generator = data_generator.flow_from_directory(
-        'datasets/dogs-vs-cats/test',
-        target_size=(image_size, image_size),
-        batch_size=BATCH_SIZE_VALIDATION,
-        class_mode='categorical'
+val_generator = train_image_gen.flow_from_directory(
+    train_dir,
+    target_size=(Image_width,Image_height),
+    batch_size=batch_size,
+    seed=42,
+    subset='validation',
+    shuffle=True
 )
 
 (BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(validation_generator))
