@@ -10,9 +10,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 trainDatagen = ImageDataGenerator(
-    rotation_range = 40,
-    width_shift_range = 0.2,
-    height_shift_range = 0.2,
+    rotation_range = 90,
+    width_shift_range = 0.1,
+    height_shift_range = 0.1,
     rescale=1./255,
     shear_range = 0.2,
     zoom_range = 0.2,
@@ -51,7 +51,7 @@ model.add(Dropout(0.1))
 model.add(Flatten())
 model.add(Dense(64))
 model.add(Activation('relu'))
-model.add(Dropout(0.6))
+model.add(Dropout(0.1))
 model.add(Dense(1))
 model.add(Activation('sigmoid'))
 
@@ -62,7 +62,7 @@ history = model.fit_generator(
     epochs = 20,
     validation_data = testSet,
     max_queue_size = 25,
-    workers = 8,
+    workers = 6,
     shuffle = True
 )
 
