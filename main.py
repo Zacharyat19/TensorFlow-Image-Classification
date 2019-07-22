@@ -25,6 +25,12 @@ STEPS_PER_EPOCH_VALIDATION = 10
 BATCH_SIZE_TRAINING = 100
 BATCH_SIZE_VALIDATION = 100
 BATCH_SIZE_TESTING = 1
+VAL_SPLIT = 0.3
+
+Image_width = 500
+Image_height = 374
+
+train_dir = 'datasets/dogs-vs-cats/train'
 
 model = Sequential()
 model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE, weights = 'imagenet'))
@@ -38,21 +44,21 @@ model.compile(optimizer = sgd, loss = OBJECTIVE_FUNCTION, metrics = LOSS_METRICS
 image_size = IMAGE_RESIZE
 
 data_generator = ImageDataGenerator(preprocessing_function=preprocess_input)
-train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = val_split)
+train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = VAL_SPLIT)
 
 train_generator = train_image_gen.flow_from_directory(
     train_dir,
     target_size=(Image_width,Image_height),
-    batch_size=batch_size,
+    batch_size=BATCH_SIZE_TRAINING,
     seed=42,
     subset='training',
     shuffle=True
 )
 
-val_generator = train_image_gen.flow_from_directory(
+validation_generator = train_image_gen.flow_from_directory(
     train_dir,
     target_size=(Image_width,Image_height),
-    batch_size=batch_size,
+    batch_size=BATCH_SIZE_VALIDATION,
     seed=42,
     subset='validation',
     shuffle=True
@@ -61,7 +67,7 @@ val_generator = train_image_gen.flow_from_directory(
 (BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(validation_generator))
 
 cb_early_stopper = EarlyStopping(monitor = 'val_loss', patience = EARLY_STOP_PATIENCE)
-cb_checkpointer = ModelCheckpoint(filepath = '../working/best.hdf5', monitor = 'val_loss', save_best_only = True, mode = 'auto')
+cb_checkpointer = ModelCheckpoint(filepath = 'working/best.hdf5', monitor = 'val_loss', save_best_only = True, mode = 'auto')
 
 fit_history = model.fit_generator(
         train_generator,
