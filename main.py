@@ -1,94 +1,81 @@
-import cv2
+import keras
 import os
-import numpy as np
-import pandas as pd
+import tensorflow as tf
 import matplotlib.pyplot as plt
+from PIL import Image
+from tkinter.filedialog import askopenfilename
+from tkinter import Tk
+from keras import optimizers
 from keras.applications import ResNet50
 from keras.models import Sequential
-from keras.layers import Dense
-from keras import optimizers
-from keras.applications.resnet50 import preprocess_input
+from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Flatten, Dense, Activation, Dropout
 from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.applications.resnet50 import preprocess_input
 
-CHANNELS = 3
-IMAGE_RESIZE = 224
-RESNET50_POOLING_AVERAGE = 'avg'
-NUM_EPOCHS = 2
-EARLY_STOP_PATIENCE = 3
-STEPS_PER_EPOCH_TRAINING = 10
-STEPS_PER_EPOCH_VALIDATION = 10
-BATCH_SIZE_TRAINING = 100
-BATCH_SIZE_VALIDATION = 100
-BATCH_SIZE_TESTING = 1
-VAL_SPLIT = 0.3
+NUM_CLASSES = 2
+#opens interface to pick a file
+#Tk().withdraw()
+#filename = askopenfilename()
 
-model = Sequential()
-model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
-weights = 'imagenet'))
-model.add(Dense(2, activation = 'softmax'))
-model.layers[0].trainable = False
-model.summary()
+#checkpoint_path = "training_1/cp.ckpt"
+#checkpoint_dir = os.path.dirname(checkpoint_path)
 
-sgd = optimizers.SGD(lr = 0.01, decay = 1e-6, momentum = 0.9, nesterov = True)
-model.compile(optimizer = sgd, loss = 'categorical_crossentropy', metrics = ['accuracy'])
+# Create checkpoint callback
+#cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
 
-data_generator = ImageDataGenerator(preprocessing_function = preprocess_input)
-train_image_gen = ImageDataGenerator(rescale=1/255,validation_split = VAL_SPLIT)
+train_data_gen = ImageDataGenerator(
+    rotation_range = 40,
+    width_shift_range = 0.2,
+    height_shift_range = 0.2,
+    rescale=1./255,
+    shear_range = 0.2,
+    zoom_range = 0.2,
+    horizontal_flip = True
+)
 
-train_generator = train_image_gen.flow_from_directory(
+data_gen = ImageDataGenerator(preprocessing_function = preprocess_input)
+
+train_gen = data_gen.flow_from_directory(
     'datasets/dogs-vs-cats/train',
     target_size = (224, 224),
-    batch_size = BATCH_SIZE_TRAINING,
-    seed=42,
-    subset ='training',
-    shuffle = True
+    class_mode = 'categorical'
 )
 
-val_generator = data_generator.flow_from_directory(
-    'datasets/dogs-vs-cats/test',
+valid_gen = data_gen.flow_from_directory(
+    'datasets/dogs-vs-cats/Validation',
     target_size = (224, 224),
-    batch_size = BATCH_SIZE_TESTING,
-    seed=42,
-    subset ='validation',
-    shuffle = True
+    class_mode = 'categorical'
 )
 
-(BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(val_generator))
+model = Sequential()
+model.add(ResNet50(include_top = False, pooling = 'avg',
+weights = 'Weights/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'))
+model.add(Dense(NUM_CLASSES, activation = 'softmax'))
+model.layers[0].trainable = False
 
-cb_early_stopper = EarlyStopping(monitor = 'val_loss', patience = EARLY_STOP_PATIENCE)
-cb_checkpointer = ModelCheckpoint(filepath = 'training_1/cp.ckpt', monitor = 'val_loss', save_best_only = True, mode = 'auto')
+sgd = optimizers.SGD(lr = 0.01, decay = 0, momentum = 0.9, nesterov = True)
+model.compile(optimizer = sgd, loss = 'categorical_crossentropy', metrics = ['accuracy'])
+model.summary()
 
 history = model.fit_generator(
-        train_generator,
-        steps_per_epoch = STEPS_PER_EPOCH_TRAINING,
-        epochs = NUM_EPOCHS,
-        validation_data = val_generator,
-        validation_steps = STEPS_PER_EPOCH_VALIDATION,
-        callbacks = [cb_checkpointer, cb_early_stopper],
-        workers = 4
+    train_gen,
+    epochs = 3,
+    steps_per_epoch = 773,
+    validation_data = valid_gen,
+    validation_steps = 8,
+    max_queue_size = 25,
+    workers = 4,
+    shuffle = True,
+    #callbacks = [cp_callback]
 )
-
-#model.load_weights("weights/saves.h5")
 
 print(history.history.keys())
 
-plt.figure(1, figsize = (15,8))
-
-plt.subplot(221)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
-plt.legend(['train', 'valid'])
-
-plt.subplot(222)
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'valid'])
-
+plt.legend(['train', 'test'], loc='upper left')
 plt.show()
