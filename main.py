@@ -64,18 +64,43 @@ validation_generator = train_image_gen.flow_from_directory(
     shuffle=True
 )
 
-(BATCH_SIZE_TRAINING, len(train_generator), BATCH_SIZE_VALIDATION, len(validation_generator))
 
-cb_early_stopper = EarlyStopping(monitor = 'val_loss', patience = EARLY_STOP_PATIENCE)
-cb_checkpointer = ModelCheckpoint(filepath = 'working/best.hdf5', monitor = 'val_loss', save_best_only = True, mode = 'auto')
+model = Sequential()
+model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
+weights = 'imagenet'))
+model.layers[0].trainable = False
+model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(64, 64, 3)))
+model.add(MaxPooling2D(pool_size = (2, 2)))
+model.add(Dropout(0.1))
 
-fit_history = model.fit_generator(
-        train_generator,
-        steps_per_epoch=STEPS_PER_EPOCH_TRAINING,
-        epochs = NUM_EPOCHS,
-        validation_data=validation_generator,
-        validation_steps=STEPS_PER_EPOCH_VALIDATION,
-        callbacks=[cb_checkpointer, cb_early_stopper]
+model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+model.add(MaxPooling2D(pool_size = (2, 2)))
+model.add(Dropout(0.1))
+
+model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+model.add(MaxPooling2D(pool_size = (2, 2)))
+model.add(Dropout(0.1))
+
+model.add(Flatten())
+model.add(Dense(128, kernel_regularizer=keras.regularizers.l2(0.001)))
+model.add(Activation('relu'))
+model.add(Dropout(0.1))
+model.add(Dense(1))
+model.add(Activation('sigmoid'))
+
+sgd = optimizers.SGD(lr = 0.0001, decay = 0, momentum = 0.9, nesterov = True)
+model.compile(optimizer = sgd, loss = 'binary_crossentropy', metrics = ['accuracy'])
+
+history = model.fit_generator(
+    trainingSet,
+    epochs = 20,
+    steps_per_epoch = 781,
+    validation_data = testSet,
+    validation_steps = 10,
+    max_queue_size = 25,
+    workers = 8,
+    shuffle = True,
+    callbacks = [cp_callback]
 )
 model.load_weights("../working/best.hdf5")
 
