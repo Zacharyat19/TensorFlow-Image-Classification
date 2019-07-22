@@ -48,6 +48,9 @@ testSet = testDatagen.flow_from_directory(
 )
 
 model = Sequential()
+model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
+weights = 'imagenet'))
+model.layers[0].trainable = False
 model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(64, 64, 3)))
 model.add(MaxPooling2D(pool_size = (2, 2)))
 model.add(Dropout(0.1))
