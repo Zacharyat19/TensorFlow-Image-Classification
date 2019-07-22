@@ -5,6 +5,7 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Flatten, Dense, Activation, Dropout
 from keras.preprocessing.image import ImageDataGenerator
+from keras.applications import ResNet50
 from keras import optimizers
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -48,7 +49,7 @@ testSet = testDatagen.flow_from_directory(
 )
 
 model = Sequential()
-model.add(ResNet50(include_top = False, pooling = RESNET50_POOLING_AVERAGE,
+model.add(ResNet50(include_top = False, pooling = 'avg',
 weights = 'imagenet'))
 model.layers[0].trainable = False
 model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(64, 64, 3)))
