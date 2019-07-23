@@ -22,12 +22,12 @@ trainDatagen = ImageDataGenerator(
         featurewise_std_normalization=False,
         samplewise_std_normalization=False,
 #        rotation_range=15,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        shear_range=0.2,
-        zoom_range=0.2,
+#        width_shift_range=0.1,
+#        height_shift_range=0.1,
+#        shear_range=0.2,
+#        zoom_range=0.2,
 #        channel_shift_range=0.1,
-        fill_mode='nearest',
+#        fill_mode='nearest',
 #        horizontal_flip=True,
 #        vertical_flip=True,
         validation_split=0.0
@@ -64,8 +64,8 @@ model.add(Dense(512))
 model.add(Activation('softplus'))
 model.add(GaussianNoise(0.04))
 model.add(Dense(100, activation = 'sigmoid'))
-model.compile(optimizer = 'sgd', loss = 'categorical_hinge', metrics = ['categorical_accuracy'])
-history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 500, steps_per_epoch = 200, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), validation_steps = 10,
+model.compile(optimizer = 'rmsprop', loss = 'categorical_hinge', metrics = ['categorical_accuracy'])
+history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 500, steps_per_epoch = 2000, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), validation_steps = 10,
     max_queue_size = 25, workers = 8, shuffle = True, callbacks = [cp_callback]
 )
 print(history.history.keys())
