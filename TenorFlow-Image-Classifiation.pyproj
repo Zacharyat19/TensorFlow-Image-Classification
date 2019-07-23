@@ -19,10 +19,16 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="main.py" />
+    <Compile Include="MainWindow.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
