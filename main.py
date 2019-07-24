@@ -3,9 +3,10 @@
 #Import required libraries and packages
 import keras
 import os
+import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from tkinter.filedialog import askopenfilename
+from keras.preprocessing import image
 from keras import optimizers
 from keras.applications import ResNet50
 from keras.models import Sequential
@@ -16,14 +17,7 @@ from keras.applications.resnet50 import preprocess_input
 #classification can either be Cat or Dog
 NUM_CLASSES = 2
 
-#Declare checkpoint path
-#checkpoint_path = "training_1/cp.ckpt"
-#checkpoint_dir = os.path.dirname(checkpoint_path)
-
-# Create checkpoint callback
-#cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
-
-#Augmented training data allows a greater sample of test data
+#Augmented training data allows a greater sample of data to use
 train_data_gen = ImageDataGenerator(
     rotation_range = 40,
     width_shift_range = 0.2,
@@ -53,11 +47,11 @@ valid_gen = data_gen.flow_from_directory(
 #Initialize model
 model = Sequential()
 
-#Add ResNet50 a first layer
+#Add ResNet50 as first layer
 model.add(ResNet50(include_top = False, pooling = 'avg',
 weights = 'Weights/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'))
 
-#Use Dense layer built for current model
+#Create a final Dense layer for our model
 model.add(Dense(NUM_CLASSES, activation = 'softmax'))
 
 #Tell the model not to train first layer since it's already trained
@@ -71,30 +65,41 @@ model.summary()
 #Initialize epochs, data, and steps
 history = model.fit_generator(
     train_gen,
-    epochs = 2,
+    epochs = 1,
     steps_per_epoch = 200,
     validation_data = valid_gen,
     validation_steps = 8,
     max_queue_size = 25,
     workers = 4,
     shuffle = True,
-    #callbacks = [cp_callback]
 )
+
+#make a prediciton based on an image file
+img = image.load_img('datasets/dogs-vs-cats/test/Dogs/90.jpg', target_size = (224, 224))
+x = image.img_to_array(img)
+x = np.expand_dims(x, axis = 0)
+images = np.vstack([x])
+classes = model.predict(images)
+if classes[0][0] >= 0.98:
+    prediction = "dog"
+else:
+    prediction = "cat"
+print(prediction)
 
 #print history
 print(history.history.keys())
 
 #Upload history into accuracy graph
+plt.figure(1)
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
-plt.show()
 
 #Upload history into loss graph
-plt.subplot(222)
+plt.figure(2)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('model loss')
