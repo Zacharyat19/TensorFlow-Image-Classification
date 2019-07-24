@@ -7,16 +7,12 @@ from keras.losses import *
 from keras import optimizers
 from PIL import Image
 import matplotlib.pyplot as plt
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfilename
 from tkinter import Tk
 from keras.datasets import cifar10
 from keras.utils.np_utils import to_categorical
 def combined_loss(y_true, y_pred):
-    return (logcosh(y_true, y_pred) + categorical_hinge(y_true, y_pred) + categorical_crossentropy(y_true, y_pred)) / 3
-Tk().withdraw()
-filename = askopenfilename()
-checkpoint_dir = os.path.dirname(filename)
-cp_callback = tf.keras.callbacks.ModelCheckpoint(filename, save_weights_only = True, verbose = 1, save_best_only = True)
+    return mean_absolute_error(y_true, y_pred) * 4 + mean_squared_error(y_true, y_pred) * 4 + categorical_hinge(y_true, y_pred) * 2 + categorical_crossentropy(y_true, y_pred)
 trainDatagen = ImageDataGenerator(
         rotation_range=15,
         width_shift_range=0.1,
@@ -40,7 +36,7 @@ model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(AveragePooling2D(pool_size = (2, 2)))
 model.add(GaussianNoise(0.2))
 model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
-model.add(Conv2D(54, (3, 3), activation='relu'))
+model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(AveragePooling2D(pool_size = (2, 2)))
 model.add(GaussianNoise(0.2))
 model.add(Flatten())
@@ -48,17 +44,20 @@ model.add(Dense(512))
 model.add(Activation('relu'))
 model.add(GaussianNoise(0.2))
 model.add(Dense(10, activation = 'softmax'))
-model.compile(optimizer = 'sgd', loss = categorical_crossentropy, metrics = ['categorical_accuracy'])
+model.compile(optimizer = 'sgd', loss = combined_loss, metrics = ['categorical_accuracy'])
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 x_train /= 255
 x_test /= 255
-history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 500, steps_per_epoch = 2000, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), max_queue_size = 25, workers = 8, shuffle = True, callbacks = [cp_callback])
+history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 10, steps_per_epoch = 2000, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), max_queue_size = 25, workers = 8, shuffle = True)
+Tk().withdraw()
+filename = asksaveasfilename()
+model.save(filename)
 print(history.history.keys())
-plt.plot(history.history['acc'])
-plt.plot(history.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
+plt.plot(history.history['categorical_accuracy'])
+plt.plot(history.history['val_categorical_accuracy'])
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch ID')
+plt.legend(['Training Set', 'Validation Set'], loc='upper left')
 plt.show()
