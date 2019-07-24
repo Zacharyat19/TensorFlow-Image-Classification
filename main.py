@@ -3,6 +3,7 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Conv2D, AveragePooling2D, Flatten, Dense, GaussianNoise, Activation
 from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import ModelCheckpoint
 from keras.losses import *
 from keras import optimizers
 from PIL import Image
@@ -25,6 +26,7 @@ trainDatagen = ImageDataGenerator(
         validation_split=0.0
 )
 testDatagen = ImageDataGenerator()
+checkpoint = ModelCheckpoint("model_weights.h5", monitor='categorical_accuracy', verbose=1, save_best_only=True, mode='max')
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
@@ -49,10 +51,10 @@ x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 x_train /= 255
 x_test /= 255
-history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 10, steps_per_epoch = 2000, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), max_queue_size = 25, workers = 8, shuffle = True)
-Tk().withdraw()
-filename = asksaveasfilename()
-model.save(filename)
+history = model.fit_generator(trainDatagen.flow(x_train, y_train, batch_size = 25), epochs = 10, steps_per_epoch = 2000, validation_data = testDatagen.flow(x_test, y_test, batch_size = 25), max_queue_size = 25, workers = 8, shuffle = True, callbacks = [checkpoint])
+model_json = model.to_json()
+with open("model.json", "w") as json_file:
+    json_file.write(model_json)
 print(history.history.keys())
 plt.plot(history.history['categorical_accuracy'])
 plt.plot(history.history['val_categorical_accuracy'])
