@@ -5,29 +5,23 @@ import keras
 import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from PIL import Image
 from tkinter.filedialog import askopenfilename
-from tkinter import Tk
 from keras import optimizers
 from keras.applications import ResNet50
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Flatten, Dense, Activation, Dropout
+from keras.layers import Dense
 from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import preprocess_input
 
 #classification can either be Cat or Dog
 NUM_CLASSES = 2
 
-#opens interface to pick a file
-#Tk().withdraw()
-#filename = askopenfilename()
-
-checkpoint_path = "training_1/cp.ckpt"
-checkpoint_dir = os.path.dirname(checkpoint_path)
+#Declare checkpoint path
+#checkpoint_path = "training_1/cp.ckpt"
+#checkpoint_dir = os.path.dirname(checkpoint_path)
 
 # Create checkpoint callback
-cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
+#cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,save_weights_only=True,verbose=1,save_best_only=True,mode="max")
 
 #Augmented training data allows a greater sample of test data
 train_data_gen = ImageDataGenerator(
@@ -77,24 +71,34 @@ model.summary()
 #Initialize epochs, data, and steps
 history = model.fit_generator(
     train_gen,
-    epochs = 3,
-    steps_per_epoch = 773,
+    epochs = 2,
+    steps_per_epoch = 200,
     validation_data = valid_gen,
     validation_steps = 8,
     max_queue_size = 25,
     workers = 4,
     shuffle = True,
-    callbacks = [cp_callback]
+    #callbacks = [cp_callback]
 )
 
 #print history
 print(history.history.keys())
 
-#Upload history into graph format
+#Upload history into accuracy graph
 plt.plot(history.history['acc'])
 plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+#Upload history into loss graph
+plt.subplot(222)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'valid'])
 plt.show()
