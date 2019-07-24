@@ -2,9 +2,7 @@
 
 #Import required libraries and packages
 import keras
-import os
 import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
 from keras.preprocessing import image
 from keras import optimizers
