@@ -19,19 +19,20 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="MainWindow.xaml">
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="main.py" />
-    <Compile Include="MainWindow.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="TenorFlow-Image-Classifiation-Gui.pyproj">
+      <Name>TenorFlow-Image-Classifiation-Gui</Name>
+      <Project>{b1fdde76-ed9a-4fc5-8849-0dbcbd45aadc}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

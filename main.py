@@ -48,7 +48,7 @@ model.add(Dense(512))
 model.add(Activation('relu'))
 model.add(GaussianNoise(0.2))
 model.add(Dense(10, activation = 'softmax'))
-model.compile(optimizer = 'sgd', loss = combined_loss, metrics = ['categorical_accuracy'])
+model.compile(optimizer = 'sgd', loss = categorical_crossentropy, metrics = ['categorical_accuracy'])
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 x_train /= 255
