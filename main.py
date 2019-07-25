@@ -136,7 +136,7 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'valid'])
-plt.show()
+#plt.show()
 
 #Convert model to JSON
 model_json = model.to_json()
