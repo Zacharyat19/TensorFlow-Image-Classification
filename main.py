@@ -2,6 +2,8 @@
 
 #Import required libraries and packages
 import keras
+import cv2
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.preprocessing import image
@@ -60,11 +62,12 @@ sgd = optimizers.SGD(lr = 0.01, decay = 0, momentum = 0.9, nesterov = True)
 model.compile(optimizer = sgd, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 model.summary()
 
-#Initialize epochs, data, and steps
+#Generate epochs, steps, and data
+#Uses history the function of Keras for graphing data
 history = model.fit_generator(
     train_gen,
     epochs = 1,
-    steps_per_epoch = 200,
+    steps_per_epoch = 25,
     validation_data = valid_gen,
     validation_steps = 8,
     max_queue_size = 25,
@@ -72,18 +75,47 @@ history = model.fit_generator(
     shuffle = True,
 )
 
+#Once the model has finished training it is ready to make a prediction
+#Capture inout via laptop camera for prediction
+cam = cv2.VideoCapture(0)
+cv2.namedWindow("test")
+img_counter = 0
+
+while True:
+    ret, frame = cam.read()
+    cv2.imshow("test", frame)
+    if not ret:
+        break
+    k = cv2.waitKey(1)
+
+    if k%256 == 27:
+        # ESC pressed
+        print("Escape hit, closing...")
+        break
+    elif k%256 == 32:
+        # SPACE pressed
+        img_name = "opencv_frame_{}.png".format(img_counter)
+        cv2.imwrite(img_name, frame)
+        print("{} written!".format(img_name))
+        img_counter += 1
+
+cam.release()
+cv2.destroyAllWindows()
+
 #make a prediciton based on an image file
-img = image.load_img('datasets/dogs-vs-cats/test/Dogs/90.jpg', target_size = (224, 224))
+img = image.load_img('opencv_frame_0.png', target_size = (224, 224))
 x = image.img_to_array(img)
 x = np.expand_dims(x, axis = 0)
 images = np.vstack([x])
 classes = model.predict(images)
 if classes[0][0] >= 0.98:
-    prediction = "dog"
+    plt.imshow(img)
+    plt.title("Cat")
+    plt.show()
 else:
-    prediction = "cat"
-print(prediction)
-
+    plt.imshow(img)
+    plt.title("Dog")
+    plt.show()
 #print history
 print(history.history.keys())
 
@@ -105,3 +137,11 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'valid'])
 plt.show()
+
+#Convert model to JSON
+model_json = model.to_json()
+with open("model.json", "w") as json_file:
+    json_file.write(model_json)
+
+#delete image file so a new image can be tested 
+os.remove("opencv_frame_0.png")
