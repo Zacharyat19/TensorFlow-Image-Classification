@@ -1,4 +1,4 @@
-# TenorFlow-Image-Classifiation
+# TensorFlow-Image-Classification
 A version of the image classifier built with transfer learning through ResNet50.
 
 ### Requirements:
