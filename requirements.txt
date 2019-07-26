@@ -3,5 +3,6 @@ keras
 tensorflow
 matplotlib
 numpy
-#add to settings.json for opencv
+#For vsCode users
+#add to settings.json for opencv functionality
 "python.linting.pylintArgs": ["--generate-members"]
