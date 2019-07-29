@@ -135,13 +135,13 @@ def predict():
     model = model_from_json(loaded_model_json)
 
     try:
-        model.load_weights("model_weights.h5")
+        model.load_weights("Weights/model_weights.h5")
     except:
         print("Error","model_weights.h5 wasn't found.")
         return
     
     try:
-        json_file = open("class_names.json","r")
+        json_file = open("imagenet_class_index.json","r")
     except:
         print("Error","class_names.json wasn't found.")
         return
