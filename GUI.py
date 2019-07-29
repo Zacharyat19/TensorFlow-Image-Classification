@@ -14,16 +14,18 @@ from pathlib import Path
 import numpy as np
 import json
 import cv2
+import time
 
-guiHeight = 500
+guiHeight = 400
 guiWidth = 500
 picHeight = 256
 picWidth = 256
-
-defaultW = 64
-defaultH = 64
-
+infoPadding = 35
+defaultW = 224
+defaultH = 224
 img=None
+backgroundColor="#505455"
+fontColor="white"
 
 class Lotfi(tk.Entry):
     def __init__(self, master=None, **kwargs):
@@ -41,15 +43,16 @@ class Lotfi(tk.Entry):
             self.set(self.old_value)
 
 def getPrediction():
-    global img
     if img is None:
         messagebox.showinfo("Error","You must select an image first.")
-
     else:
         try:
+            infoLabel.config(text="Loading...")
+            master.update()
             json_file = open("model.json","r")
         except:
             messagebox.showinfo("Error","model.json wasn't found.")
+            infoLabel.config(text="Move model.json to the application directory.")
             return
         loaded_model_json = json_file.read()
         json_file.close()
@@ -58,11 +61,13 @@ def getPrediction():
             model.load_weights("Weights/model_weights.h5")
         except:
             messagebox.showinfo("Error","model_weights.h5 wasn't found.")
+            infoLabel.config(text="Move model_weights.h5 to the application directory.")
             return
         try:
-            json_file = open("imagenet_class_index.json","r")
+            json_file = open("class_names.json","r")
         except:
             messagebox.showinfo("Error","class_names.json wasn't found.")
+            infoLabel.config(text="Move class_names.json to the application directory.")
             return
         class_names = json.loads(json_file.read())
         json_file.close()
@@ -76,7 +81,8 @@ def getPrediction():
             predictions = model.predict(imgPred)
             print(predictions)
             y_pred = [np.argmax(probas) for probas in predictions]
-            messagebox.showinfo("Prediction",class_names[y_pred[0]])
+            # messagebox.showinfo("Prediction",class_names[y_pred[0]])
+            infoLabel.config(text="Predicted: "+class_names[y_pred[0]])
         except:
             messagebox.showinfo("Error","Image size does not match model input.")
 
@@ -98,8 +104,9 @@ def displayImage():
     imgDisp = img.resize((picWidth,picHeight))
     imgDisp = ImageTk.PhotoImage(imgDisp)
     can.delete("all")
-    can.create_image((guiWidth-picWidth)/2,(guiHeight-picHeight)/2,image=imgDisp,anchor=NW)
-    can.create_rectangle((guiWidth-picWidth)/2-1,(guiHeight-picHeight)/2-1,guiWidth-((guiWidth-picWidth)/2),guiHeight-((guiHeight-picHeight)/2))
+    can.create_image((guiWidth-picWidth)/2,(guiHeight-picHeight)/2-infoPadding,image=imgDisp,anchor=NW)
+    can.create_rectangle((guiWidth-picWidth)/2-1,(guiHeight-picHeight)/2-1-infoPadding,guiWidth-((guiWidth-picWidth)/2),guiHeight-((guiHeight-picHeight)/2)-infoPadding)
+    infoLabel.config(text="Press get prediction.")
 
 def takePic():
     global img
@@ -128,32 +135,52 @@ def takePic():
     displayImage()
 
 master = Tk()
+master.configure(bg=backgroundColor)
+frame = Frame(master,bg=backgroundColor)
+frame.pack(side=RIGHT,fill=Y)
+scrollbar = Scrollbar(frame, orient=VERTICAL)
+listbox = Listbox(frame, yscrollcommand=scrollbar.set)
+scrollbar.config(command=listbox.yview)
+listLabel = Label(frame,text="List of classes",bg=backgroundColor,fg=fontColor)
+listLabel.pack(side=TOP)
+scrollbar.pack(side=RIGHT, fill=Y)
+listbox.pack(side=LEFT, fill=BOTH, expand=1)
+try:
+    json_file = open("class_names.json","r")
+    class_names = json.loads(json_file.read())
+    json_file.close()
+    for x in class_names.keys():
+        listbox.insert(END,x)
+except:
+    messagebox.showinfo("Error","class_names.json wasn't found.")
+infoLabel = Label(text="Select an image.",bg=backgroundColor,fg=fontColor)
+infoLabel.pack(side=TOP,pady=(infoPadding,0))
 frameH = Frame(master)
-frameW = Frame(master)
+frameW = Frame(master,bg=backgroundColor)
 frameButtons = Frame(master)
 frameButtons.pack(side=BOTTOM)
 frameW.pack(side=BOTTOM)
 frameH.pack(side=BOTTOM)
 master.title("Image Identification")
-can = Canvas(master,width=guiWidth,height=guiHeight)
+can = Canvas(master,width=guiWidth,height=guiHeight,bg=backgroundColor,highlightthickness=0)
 can.pack()
-can.create_rectangle((guiWidth-picWidth)/2,(guiHeight-picHeight)/2,guiWidth-((guiWidth-picWidth)/2),guiHeight-((guiHeight-picHeight)/2),fill="grey")
-hLabel = Label(frameH,text="input height")
+can.create_rectangle((guiWidth-picWidth)/2,(guiHeight-picHeight)/2-infoPadding,guiWidth-((guiWidth-picWidth)/2),guiHeight-((guiHeight-picHeight)/2)-infoPadding,fill="grey")
+hLabel = Label(frameH,text="Input height:",bg=backgroundColor,fg=fontColor)
 hEntry = Lotfi(frameH)
-wLabel = Label(frameW,text="input width")
+wLabel = Label(frameW,text="Input width:",bg=backgroundColor,fg=fontColor)
 wEntry = Lotfi(frameW)
 hLabel.pack(side=LEFT)
 hEntry.pack(side=LEFT)
-wLabel.pack(side=LEFT)
+wLabel.pack(side=LEFT,padx=(5,0))
 wEntry.pack(side=LEFT)
 hEntry.delete(0, END)
 hEntry.insert(0, defaultH)
 wEntry.delete(0, END)
 wEntry.insert(0, defaultW)
-button1=tk.Button(frameButtons,text="Select a picture",command=loadImg)
-button2=tk.Button(frameButtons,text="Take a picture",command=takePic)
-button3=tk.Button(frameButtons,text="Get prediction",command=getPrediction)
-button4=tk.Button(frameButtons,text="Quit",command=master.quit)
+button1=tk.Button(frameButtons,text="Select a picture",command=loadImg,bg=backgroundColor,fg=fontColor)
+button2=tk.Button(frameButtons,text="Take a picture",command=takePic,bg=backgroundColor,fg=fontColor)
+button3=tk.Button(frameButtons,text="Get prediction",command=getPrediction,bg=backgroundColor,fg=fontColor)
+button4=tk.Button(frameButtons,text="Quit",command=master.quit,bg=backgroundColor,fg=fontColor)
 button1.pack(side=LEFT)
 button2.pack(side=LEFT)
 button3.pack(side=LEFT)
