@@ -11,4 +11,4 @@ with open("class_names.json", "w") as json_file:
     json_file.write(class_names)
 ```
 ### Directions:
-  Run at least one training sesion before making any prediction. This wil generate weights needed to make accurate predictions.
+  Run at least one training sesion to allow the model to create weights and save into the JSON file. This only needs to be done once before predictions can be made.
