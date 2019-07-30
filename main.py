@@ -32,7 +32,7 @@ train_data_gen = ImageDataGenerator(
 data_gen = ImageDataGenerator(preprocessing_function = preprocess_input)
 
 #pull data from dirextory and resize images
-train_gen = data_gen.flow_from_directory(
+train_gen = train_data_gen.flow_from_directory(
     'datasets/dogs-vs-cats/train',
     target_size = (224, 224),
     class_mode = 'categorical'
@@ -46,7 +46,8 @@ with open("class_names.json", "w") as json_file:
 valid_gen = data_gen.flow_from_directory(
     'datasets/dogs-vs-cats/Validation',
     target_size = (224, 224),
-    class_mode = 'categorical'
+    class_mode = 'categorical',
+    shuffle = False
 )
 
 #Initialize model
