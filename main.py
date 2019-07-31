@@ -16,14 +16,22 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import preprocess_input
 
 #classification can either be Cat or Dog
+<<<<<<< HEAD
 NUM_CLASSES = 10
+=======
+NUM_CLASSES = 2
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
 
 #Augmented training data allows a greater sample of data to use
 train_data_gen = ImageDataGenerator(
     rotation_range = 40,
     width_shift_range = 0.2,
     height_shift_range = 0.2,
+<<<<<<< HEAD
     rescale = 1./255,
+=======
+    rescale=1./255,
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
     shear_range = 0.2,
     zoom_range = 0.2,
     horizontal_flip = True
@@ -33,19 +41,30 @@ data_gen = ImageDataGenerator(preprocessing_function = preprocess_input)
 
 #pull data from dirextory and resize images
 train_gen = train_data_gen.flow_from_directory(
+<<<<<<< HEAD
     'datasets/animals/raw-img/Train',
+=======
+    'datasets/dogs-vs-cats/train',
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
     target_size = (224, 224),
     class_mode = 'categorical'
 )
 
+<<<<<<< HEAD
 #Generates class names for training data
+=======
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
 class_names = json.dumps(train_gen.class_indices)
 with open("class_names.json", "w") as json_file:
     json_file.write(class_names)
 
 #pull data from dirextory and resize images
 valid_gen = data_gen.flow_from_directory(
+<<<<<<< HEAD
     'datasets/animals/raw-img/Valid',
+=======
+    'datasets/dogs-vs-cats/Validation',
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
     target_size = (224, 224),
     class_mode = 'categorical',
     shuffle = False
@@ -73,10 +92,17 @@ model.summary()
 #Uses history the function of Keras for graphing data
 history = model.fit_generator(
     train_gen,
+<<<<<<< HEAD
     epochs = 30,
     steps_per_epoch = 500,
     validation_data = valid_gen,
     validation_steps = 50,
+=======
+    epochs = 20,
+    steps_per_epoch = 25,
+    validation_data = valid_gen,
+    validation_steps = 8,
+>>>>>>> 2f92af0f8e45b9892fc4ff2b34e56df4b08d063f
     max_queue_size = 25,
     workers = 4,
     shuffle = True,
