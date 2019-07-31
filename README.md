@@ -11,7 +11,7 @@ with open("class_names.json", "w") as json_file:
     json_file.write(class_names)
 ```
 For VSCode
-'''json
+'''JSON
 "python.linting.pylintArgs": ["--generate-members"] to settings.json
 '''
 ### Directions:
