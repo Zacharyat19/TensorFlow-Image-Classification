@@ -10,7 +10,10 @@ class_names = json.dumps(<TRAINING_GEN_NAME>.class_indices)
 with open("class_names.json", "w") as json_file:
     json_file.write(class_names)
 ```
-For VSCode, add "python.linting.pylintArgs": ["--generate-members"] to settings.json
+For VSCode
+'''json
+"python.linting.pylintArgs": ["--generate-members"] to settings.json
+'''
 ### Directions:
   Run at least one training sesion to allow the model to create weights and save into the JSON file. This only needs to be done once before predictions should be made.
 
