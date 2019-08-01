@@ -186,7 +186,7 @@ try:
         listbox.insert(END,x)
 except:
     messagebox.showinfo("Error","class_names.json wasn't found.")
-infoLabel = Label(text = "Select an image.", bg = backgroundColor, fg = fontColor)
+infoLabel = Label(text = "Select an image (Do not resize).", bg = backgroundColor, fg = fontColor)
 infoLabel.pack(side = TOP, pady = (infoPadding,0))
 frameH = Frame(master)
 frameW = Frame(master, bg = backgroundColor)

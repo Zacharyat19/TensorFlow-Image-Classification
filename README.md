@@ -18,10 +18,11 @@ For VSCode, add "python.linting.pylintArgs": ["--generate-members"] to settings.
 1. Run GUI.py in the terminal.
 2. Either select to upload an image or take a picture.
 3. Upload Image:
- a. If the image files didn’t pop up.
- b. Navigate to TensorFlow-Image-Classification/datasets/dogs-vs-cats and select an image from any of the folders.
- c. Click “get prediction”, images do not need to be resized.
+ - If the image files didn’t pop up.
+ - Navigate to TensorFlow-Image-Classification/datasets/dogs-vs-cats and select an image from any of the folders.
+ - ### Do not resize images
+ - Click “get prediction”
 4. Take a Picture:
- a. Hold picture up to the camera and press spacebar.
- b. Do not resize images.
- c. Click “get prediction”
+ - Hold picture up to the camera and press spacebar.
+ - ### Do not resize images.
+ - Click “get prediction”
