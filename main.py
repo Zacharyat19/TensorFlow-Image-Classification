@@ -16,7 +16,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.applications.resnet50 import preprocess_input
 
 #classification can either be Cat or Dog
-NUM_CLASSES = 10
+NUM_CLASSES = 2
 
 #Augmented training data allows a greater sample of data to use
 train_data_gen = ImageDataGenerator(
@@ -74,9 +74,9 @@ model.summary()
 history = model.fit_generator(
     train_gen,
     epochs = 20,
-    steps_per_epoch = 25,
+    steps_per_epoch = 100,
     validation_data = valid_gen,
-    validation_steps = 8,
+    validation_steps = 10,
     max_queue_size = 25,
     workers = 4,
     shuffle = True,

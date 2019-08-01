@@ -1,5 +1,8 @@
 # pip install -r requirements.txt
 keras
+Pillow
 tensorflow
+opencv-python
 matplotlib
-numpy
+pathlib
+pandas
