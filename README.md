@@ -1,9 +1,6 @@
 # Signify
 An image classifier built using TensorFlow and Keras API.
 
-### Download:
-You can find a download for the application [here](https://www.mediafire.com/file/0ox1465h7wr7vrn/Signify.zip/file) and a web version [here](http://nwapw-tf.com/).
-
 If you wish to compile the application yourself, install pyinstaller and run ```pyinstaller -w -F -n "Signify" -i cats-dogs.ico main.py``` from the main directory. Once it finishes building the executable will be in the dist folder. Otherwise the python instructions are down below.
 
 ### Requirements:
